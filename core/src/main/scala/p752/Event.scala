@@ -1,4 +1,4 @@
-package p752.tui
+package p752
 
 sealed trait Event
 
@@ -19,5 +19,13 @@ object Event:
     case object Up extends Special { val code = 265 }
     case object Down extends Special { val code = 266 }
 
-    val all = Tab :: Backspace :: Enter :: Left :: Right :: Up :: Down :: Nil
-    val map = all.map(t => t.code -> t).toMap
+    case object Del extends Special { val code = 280 }
+
+    /**
+      * End of Transmission block (Ctrl+W)
+      */
+    case object ETB extends Special { val code = 23 }
+
+    val all: Seq[Special] =
+      ETB :: Tab :: Backspace :: Enter :: Left :: Right :: Up :: Down :: Del :: Nil
+    val map: Map[Int, Special] = all.map(t => t.code -> t).toMap

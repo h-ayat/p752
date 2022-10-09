@@ -1,6 +1,6 @@
-package p752.tui
+package p752
 
-object StringUtils:
+object Tiles:
   def empty(w: Int, h: Int): String =
     (1 to h).map(_ => " ".times(w)).mkString("\n")
 
@@ -15,6 +15,39 @@ object StringUtils:
       val max = lines.map(_.pureSize).max
 
       lines.map(line => line + " ".times(max - line.pureSize)).mkString("\n")
+    }
+
+  extension (content: String)
+    def render(style: Style): String = style.render(content)
+
+  extension (content: String)
+    def horizontalFit(
+        w: Int,
+        vh: Align.Horizontal = Align.Horizontal.Center
+    ): String = {
+      content.horizontalAlign(empty(w, 1), vh)
+    }
+
+  extension (content: String)
+    def horizontalAlign(
+        behind: String,
+        vh: Align.Horizontal = Align.Horizontal.Center
+    ): String = {
+      if content.indexOf('\n') >= 0 then
+        throw new Exception("Expected single line")
+      val bw = behind.pureSize
+      val w = content.pureSize
+      val fitBehind = if w > bw then behind + empty(bw - w, 1) else behind
+      val dw = fitBehind.pureSize - w
+      val (left, right) = vh match {
+        case Align.Horizontal.Right =>
+          dw -> 0
+        case Align.Horizontal.Center =>
+          (dw / 2) -> (dw - (dw / 2))
+        case Align.Horizontal.Left =>
+          0 -> dw
+      }
+      fitBehind.pureTake(left) + content + fitBehind.pureTakeLast(right)
     }
 
   extension (mainContent: String)
@@ -35,23 +68,22 @@ object StringUtils:
       val (dw, dh) = (w - mw) -> (h - mh)
 
       val (left, right) = vh match {
-        case Align.Horizontal.Left =>
+        case Align.Horizontal.Right =>
           dw -> 0
         case Align.Horizontal.Center =>
           (dw / 2) -> (dw - (dw / 2))
-        case Align.Horizontal.Right =>
+        case Align.Horizontal.Left =>
           0 -> dw
       }
 
-      val (above, below) = va match {
-        case Align.Vertical.Top =>
-          dh -> 0
-        case Align.Vertical.Center =>
-          (dh / 2) -> (dh - (dh / 2))
+      val above = va match {
         case Align.Vertical.Bottom =>
-          0 -> dh
+          dh
+        case Align.Vertical.Center =>
+          dh / 2
+        case Align.Vertical.Top =>
+          0
       }
-      // println(s"$mw $w $left $right")
 
       var behindLines = fitBehind.toLines
 
@@ -59,7 +91,7 @@ object StringUtils:
       behindLines = behindLines.drop(above)
       val bottomPart = behindLines.drop(mh)
 
-      val middle = mainContent.toLines.zip(behindLines.take(mh)).map {
+      val middle = mainContent.square.toLines.zip(behindLines.take(mh)).map {
         case (front, back) =>
           back.pureTake(left) + front + back.pureTakeLast(right)
       }
@@ -90,13 +122,11 @@ object StringUtils:
           while (!commandEndChars.contains(remaining.head)) {
             remaining = remaining.tail
           }
-        else
-          counter += 1
+        else counter += 1
         remaining = remaining.tail
 
       }
       counter
-      // s.replaceAll("(\\x9B|\\x1B\\[)[0-?]*[ -\\/]*[@-~]", "").length()
 
   private val commandEndChars: Set[Char] = (('a' to 'z') ++ ('A' to 'Z')).toSet
 
@@ -165,5 +195,26 @@ object StringUtils:
 
   extension (s: String)
     def printable: String = {
-      s.replaceAllLiterally(Sequences.ESC + "", "^")
+      s.replaceAll(Sequences.ESC + "", "^")
     }
+
+  def renderVertical(items: String*): String =
+    items.mkString("\n")
+
+  def renderHorizontal(items: String*): String =
+    val h = items.map(_.toLines.length).max
+    val squaredItems = items.map { item =>
+      val w = item.toLines.map(_.pureSize).max
+      item.fillSquare(w, h)
+    }
+    val all = squaredItems.toList.map(_.toLines)
+    (0 until h)
+      .map(index => all.map(_.apply(index)).reduce(_ + _))
+      .mkString("\n")
+
+  def renderHorizontal(align: Align.Horizontal, items: String*): String =
+    val parts = items.flatMap(_.split("\n"))
+    val maxLen = parts.map(_.pureSize).max
+    parts.map(_.horizontalFit(maxLen, align)).mkString("\n")
+
+end Tiles
