@@ -1,8 +1,8 @@
-package p752.tui
+package p752
 
-import p752.tui.StringUtils.toLines
-import p752.tui.StringUtils.pureSize
-import p752.tui.StringUtils.fillSquare
+import p752.StringUtils.toLines
+import p752.StringUtils.pureSize
+import p752.StringUtils.fillSquare
 
 trait Tile:
   def render(): String

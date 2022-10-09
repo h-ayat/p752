@@ -1,4 +1,4 @@
-package p752.tui
+package p752
 
 sealed trait Event
 

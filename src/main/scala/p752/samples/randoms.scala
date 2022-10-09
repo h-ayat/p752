@@ -1,13 +1,13 @@
 package p752.samples
 
-import p752.tui.Tile
-import p752.tui.{Style, Border}
-import p752.tui.Event
+import p752.Tile
+import p752.{Style, Border}
+import p752.Event
 import scala.util.Random.nextInt
-import p752.tui.Event.Key
-import p752.tui.StringUtils._
-import p752.tui.Border
-import p752.tui.Align
+import p752.Event.Key
+import p752.StringUtils._
+import p752.Border
+import p752.Align
 
 class RandomTile(content: String, fg: Int = 141, bg: Int = 232) extends Tile:
 

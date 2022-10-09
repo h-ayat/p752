@@ -1,8 +1,8 @@
-package p752.tui
+package p752
 
 import cons.NativeBindings
 import javax.sound.midi.Sequence
-import p752.tui.StringUtils.toLines
+import p752.StringUtils.toLines
 
 case class Engine(comp: Tile):
   var size = 1

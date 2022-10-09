@@ -1,16 +1,16 @@
 package p752
 
 import cons.NativeBindings
-import p752.tui.Tile
-import p752.tui.Event
-import p752.tui.Engine
-import p752.tui.Event.Key
-import p752.tui.Style
+import p752.Tile
+import p752.Event
+import p752.Engine
+import p752.Event.Key
+import p752.Style
 import p752.samples.{ThreeRandomTiles, SquareRandomTiles, RandomTile,RandomOverlay}
-import p752.tui.StringUtils._
-import p752.tui.Sequences
-import p752.tui.Border
-import p752.tui.Event.Special.Enter
+import p752.StringUtils._
+import p752.Sequences
+import p752.Border
+import p752.Event.Special.Enter
 
 object Main:
   def main(args: Array[String]): Unit =

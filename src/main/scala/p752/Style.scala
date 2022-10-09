@@ -1,6 +1,6 @@
-package p752.tui
+package p752
 
-import p752.tui.StringUtils.toLines
+import p752.StringUtils.toLines
 
 trait Alter:
   def render(content: String): String
