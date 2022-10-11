@@ -11,7 +11,7 @@ case class Engine(comp: Tile):
     NativeBindings.init()
     print(Sequences.cursorInvisible)
     while true do
-      val content = state.render()
+      val content = state.render
       val l = content.toLines
 
       l.foreach(Engine.cleanPrintln)

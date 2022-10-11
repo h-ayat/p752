@@ -5,7 +5,7 @@ import p752.StringUtils.pureSize
 import p752.StringUtils.fillSquare
 
 trait Tile:
-  def render(): String
+  val render: String
   val update: PartialFunction[Event, Tile]
 
 object Tile:

@@ -38,6 +38,7 @@ case class Style(
   end render
 end Style
 
+
 case class Padding(top: Int = 0, left: Int = 0, bottom: Int = 0, right: Int = 0)
     extends Alter:
   def render(content: String): String =
@@ -72,6 +73,7 @@ case class Border(style: Style = Style(), round: Boolean = false) extends Alter:
 
 object Style:
   import Sequences.ESC
+  val empty = Style()
   object Codes:
     val bold = ESC + "[1m"
     val dim = ESC + "[2m"
