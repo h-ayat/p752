@@ -2,7 +2,7 @@ package p752
 
 import cons.NativeBindings
 import javax.sound.midi.Sequence
-import p752.StringUtils.toLines
+import p752.Tiles.toLines
 
 case class Engine(comp: Tile):
   var size = 1
@@ -21,11 +21,11 @@ case class Engine(comp: Tile):
       val next = NativeBindings.nextChar()
       if next == 3 then System.exit(0)
       val event = Event(next)
-      state = state.update.applyOrElse(event, _ => state)
+      state = state.update(event)
       Sequences.up(size + 1)
 
 object Engine:
-  import StringUtils.{toLines}
+  import Tiles.toLines
 
   def cleanPrintln(c: String): Unit =
     println(Sequences.clearLine + c)

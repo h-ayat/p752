@@ -5,7 +5,7 @@ import p752.Event
 import p752.Style
 import p752.tiles.HorizontalList.Spacing.FillWidth
 import p752.tiles.HorizontalList.Spacing.Seperator
-import p752.StringUtils._
+import p752.Tiles._
 
 case class HorizontalList[T](
     items: List[T],
@@ -28,17 +28,14 @@ case class HorizontalList[T](
     spacing match
       case FillWidth(w) =>
         val textLength = elements.map(_.pureSize).sum
-        println(textLength)
         val sepLen = (w - textLength) / (items.length + 1)
-        println(sepLen)
-        println(w)
         val spare = w - (textLength + (items.length + 1) * sepLen)
         val seperator = " ".times(sepLen)
         " ".times(spare) + seperator + elements.mkString(seperator) + seperator
       case Seperator(s) => s + elements.mkString(s) + s
   }
 
-  val update: PartialFunction[Event, HorizontalList[T]] = {
+  def update(e: Event): HorizontalList[T] = e match {
     case Event.Special.Left if index > 0 =>
       copy(index = index - 1)
     case Event.Special.Right if index < items.length - 1 =>
@@ -51,6 +48,9 @@ case class HorizontalList[T](
 
     case Event.Special.Enter =>
       copy(finished = true)
+
+    case _ =>
+      this
 
   }
 

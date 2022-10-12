@@ -5,10 +5,12 @@ import p752.{Style, Border}
 import p752.Event
 import scala.util.Random.nextInt
 import p752.Event.Key
-import p752.StringUtils._
+import p752.Tiles._
 import p752.Border
 import p752.Align
 import p752.tiles.HorizontalList
+import p752.tiles.Table
+import p752.Tiles
 
 class RandomTile(content: String, fg: Int = 141, bg: Int = 232) extends Tile:
 
@@ -19,35 +21,33 @@ class RandomTile(content: String, fg: Int = 141, bg: Int = 232) extends Tile:
   override val render: String =
     border.render(textStyle.render(content.square))
 
-  override val update: PartialFunction[Event, RandomTile] =
-    case e: Event =>
-      val next = (1 to (3 + nextInt(7)))
-        .map(_ =>
-          (1 to (5 + nextInt(15)))
-            .map(_ => scala.util.Random.nextPrintableChar())
-            .mkString("")
-        )
-        .mkString("\n")
-      val message = e match {
-        case Key(ch) => ch.toString
-        case any     => any.toString
-      }
-      val fg = nextInt(255)
-      val bg = nextInt(255)
-      RandomTile(s"$message $fg $bg $next", nextInt(255), nextInt(255))
+  override def update(e: Event): RandomTile =
+    val next = (1 to (3 + nextInt(7)))
+      .map(_ =>
+        (1 to (5 + nextInt(15)))
+          .map(_ => scala.util.Random.nextPrintableChar())
+          .mkString("")
+      )
+      .mkString("\n")
+    val message = e match {
+      case Key(ch) => ch.toString
+      case any     => any.toString
+    }
+    val fg = nextInt(255)
+    val bg = nextInt(255)
+    RandomTile(s"$message $fg $bg $next", nextInt(255), nextInt(255))
 
 case class ThreeRandomTiles(r1: RandomTile, r2: RandomTile, r3: RandomTile)
     extends Tile {
 
   override val render: String =
-    Tile.renderVertical(r1.render, r2.render, r3.render)
+    Tiles.renderVertical(r1.render, r2.render, r3.render)
 
-  override val update: PartialFunction[Event, ThreeRandomTiles] =
-    case e: Event =>
-      val newR1 = r1.update(e)
-      val newR2 = r2.update(e)
-      val newR3 = r3.update(e)
-      this.copy(newR1, newR2, newR3)
+  override def update(e: Event): ThreeRandomTiles =
+    val newR1 = r1.update(e)
+    val newR2 = r2.update(e)
+    val newR3 = r3.update(e)
+    this.copy(newR1, newR2, newR3)
 }
 
 case class SquareRandomTiles(
@@ -57,13 +57,12 @@ case class SquareRandomTiles(
 ) extends Tile {
 
   override val render: String =
-    Tile.renderHorizontal(r1.render, r2.render, r3.render)
-  override val update: PartialFunction[Event, SquareRandomTiles] =
-    case e: Event =>
-      val nr1 = r1.update(e)
-      val nr2 = r2.update(e)
-      val nr3 = r3.update(e)
-      this.copy(nr1, nr2, nr3)
+    Tiles.renderHorizontal(r1.render, r2.render, r3.render)
+  override def update(e: Event): SquareRandomTiles =
+    val nr1 = r1.update(e)
+    val nr2 = r2.update(e)
+    val nr3 = r3.update(e)
+    this.copy(nr1, nr2, nr3)
 
 }
 
@@ -75,6 +74,22 @@ case class RandomOverlay(
   private val border = Border(style = Style(foreground = 199))
   private val frameW = 24 + nextInt(12)
   private val frame = border.render(empty(frameW, 4 + nextInt(6)))
+
+  val data = (1 to 8).map { j =>
+    (1 to 4)
+      .map { i =>
+        (j * 10 + i).toString() + "Z".times(nextInt(10))
+      }
+      .mkString(",")
+  }.toList
+  private val table =
+    Table[String](
+      data,
+      "A,B,C,D".split(",").toList,
+      _.split(",").toList,
+      align = Align.Horizontal.Center
+    )
+
   private val internal = list.getOrElse(
     new HorizontalList(
       List("Yes", "No", "Maybe"),
@@ -85,23 +100,24 @@ case class RandomOverlay(
   )
 
   override val render: String =
-    if visible then
-      internal.render
-        .onTopOf(frame)
-        .onTopOf(
-          back.render,
-          va = Rand.choose(Align.Vertical.all: _*),
-          vh = Rand.choose(Align.Horizontal.all: _*)
-        )
-    else back.render
+    val above =
+      if visible then
+        internal.render
+          .onTopOf(frame)
+          .onTopOf(
+            back.render,
+            va = Rand.choose(Align.Vertical.all: _*),
+            vh = Rand.choose(Align.Horizontal.all: _*)
+          )
+      else back.render
+    Tiles.renderHorizontal(above, table.render)
 
-  override val update: PartialFunction[Event, Tile] = { case e =>
-    val newInt = internal.update.applyOrElse(e, _ => internal)
+  override def update(e: Event): RandomOverlay =
+    val newInt = internal.update(e)
     if newInt.finished then
       val b = back.update(e)
       RandomOverlay(b, visible = !visible)
     else this.copy(list = Some(newInt))
-  }
 
 }
 

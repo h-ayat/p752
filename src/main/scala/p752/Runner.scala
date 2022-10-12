@@ -7,7 +7,7 @@ import p752.Engine
 import p752.Event.Key
 import p752.Style
 import p752.samples.{ThreeRandomTiles, SquareRandomTiles, RandomTile,RandomOverlay}
-import p752.StringUtils._
+import p752.Tiles._
 import p752.Sequences
 import p752.Border
 import p752.Event.Special.Enter
