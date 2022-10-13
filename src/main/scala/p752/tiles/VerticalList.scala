@@ -25,7 +25,7 @@ final case class VerticalList[T](
       }
       .mkString("\n")
   }
-  override def update(event: Event): Tile = event match {
+  override def update(event: Event): VerticalList[T] = event match {
     case _ if finished => this
     case Event.Key('j') | Event.Special.Down =>
       val ind =
