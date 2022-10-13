@@ -5,6 +5,7 @@ import p752.Tiles.toLines
 trait Alter:
   def render(content: String): String
 
+
 case class Style(
     foreground: Int = 255,
     background: Int = 16,

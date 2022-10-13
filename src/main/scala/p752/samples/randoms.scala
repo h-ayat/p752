@@ -124,3 +124,19 @@ case class RandomOverlay(
 object Rand:
   def choose[T](ts: T*): T =
     ts(nextInt(ts.length))
+
+  val data = (1 to 8).map { j =>
+    (1 to 4)
+      .map { i =>
+        (j * 10 + i).toString() + "Z".times(nextInt(10))
+      }
+      .mkString(",")
+  }.toList
+
+  val table =
+    Table[String](
+      data,
+      "A,B,C,D".split(",").toList,
+      _.split(",").toList,
+      align = Align.Horizontal.Center
+    )

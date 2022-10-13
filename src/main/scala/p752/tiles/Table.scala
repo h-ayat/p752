@@ -48,9 +48,19 @@ case class Table[T](
 
     (renderedHeaders :: breaker :: renderedData).mkString("\n")
   }
-  override def update(e: Event): Table[T] = {
-    this
-  }
+  override def update(e: Event): Table[T] = 
+
+    e match {
+      case Event.Key('j') | Event.Special.Down =>
+        val ind = (index + 1) % items.length
+        this.copy(index = ind)
+
+      case Event.Key('k') | Event.Special.Up =>
+        val ind = if index == 0 then items.length - 1 else index - 1
+        this.copy(index = ind)
+      case _ =>
+        this
+    }
 }
 
 object Table:

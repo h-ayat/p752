@@ -7,3 +7,5 @@ import p752.Tiles.fillSquare
 trait Tile:
   def update(event: Event): Tile
   val render: String
+
+  
