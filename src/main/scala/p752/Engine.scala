@@ -19,6 +19,7 @@ case class Engine(comp: Tile):
       else (l.length to size).map(_ => "").foreach(Engine.cleanPrintln)
 
       val next = NativeBindings.nextChar()
+      // println(next)
       if next == 3 then System.exit(0)
       val event = Event(next)
       state = state.update(event)
