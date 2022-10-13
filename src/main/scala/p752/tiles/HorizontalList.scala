@@ -36,9 +36,11 @@ case class HorizontalList[T](
   }
 
   def update(e: Event): HorizontalList[T] = e match {
-    case Event.Special.Left if index > 0 =>
+    case _ if finished =>
+      this
+    case Event.Key('h') | Event.Special.Left if index > 0 =>
       copy(index = index - 1)
-    case Event.Special.Right if index < items.length - 1 =>
+    case Event.Key('l') | Event.Special.Right if index < items.length - 1 =>
       copy(index = index + 1)
 
     case Event.Special.Tab =>
