@@ -1,6 +1,6 @@
-package cons
+package p752
 
-import scala.scalanative.unsafe.{extern, link}
+import scala.scalanative.unsafe.extern
 
 @extern
 object NativeBindings {

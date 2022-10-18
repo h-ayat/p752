@@ -26,7 +26,7 @@ case class Style(
     if underlined then buffer.append(Codes.underlined)
     if blinking then buffer.append(Codes.blinking)
     if dim then buffer.append(Codes.dim)
-    if striked then buffer.append(Codes.striked)
+    if striked then buffer.append(Codes.stroked)
     buffer.append(Codes.fColor(foreground))
     buffer.append(Codes.bColor(background))
     Sequences.ESC + "[" + buffer.mkString(";") + "m"
@@ -67,25 +67,25 @@ case class Border(style: Style = Style(), round: Boolean = false) extends Alter:
     val top = style.render(angles(0) + floor.times(len) + angles(1))
     val bottom = style.render(angles(2) + floor.times(len) + angles(3))
 
-    ((top :: s.map(style.render(wall) + _ + style.render(wall)) ++ List(
+    (top :: s.map(style.render(wall) + _ + style.render(wall)) ++ List(
       bottom
-    )))
+    ))
       .mkString("\n")
 
 object Style:
   import Sequences.ESC
-  val empty = Style()
+  val empty: Style = Style()
   object Codes:
     val bold = "1"
     val dim = "2"
     val italic = "3"
     val underlined = "4"
     val blinking = "5"
-    val striked = "9"
+    val stroked = "9"
     val reset = s"$ESC[0m"
 
-    def fColor(a: Int): String = s"38;5;${a}"
-    def bColor(a: Int): String = s"48;5;${a}"
+    def fColor(a: Int): String = s"38;5;$a"
+    def bColor(a: Int): String = s"48;5;$a"
 
 object Align:
   sealed trait Vertical
@@ -93,11 +93,11 @@ object Align:
     case object Top extends Vertical
     case object Center extends Vertical
     case object Bottom extends Vertical
-    val all = Top :: Center :: Bottom :: Nil
+    val all: Seq[Vertical] = Top :: Center :: Bottom :: Nil
 
   sealed trait Horizontal
   object Horizontal:
     case object Left extends Horizontal
     case object Center extends Horizontal
     case object Right extends Horizontal
-    val all = Left :: Center :: Right :: Nil
+    val all: Seq[Horizontal] = Left :: Center :: Right :: Nil

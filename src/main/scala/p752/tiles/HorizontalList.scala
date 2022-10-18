@@ -1,11 +1,8 @@
 package p752.tiles
 
-import p752.Tile
-import p752.Event
-import p752.Style
-import p752.tiles.HorizontalList.Spacing.FillWidth
-import p752.tiles.HorizontalList.Spacing.Seperator
-import p752.Tiles._
+import p752.Tiles.*
+import p752.tiles.HorizontalList.Spacing.{FillWidth, Separator}
+import p752.{Event, Style, Tile}
 
 case class HorizontalList[T](
     items: List[T],
@@ -15,9 +12,9 @@ case class HorizontalList[T](
     selectedStyle: Style = Style.empty,
     index: Int = 0,
     finished: Boolean = false
-) extends Tile {
+) extends Tile[Any] {
 
-  val selected = items(index)
+  val selected: T = items(index)
 
   val render: String = {
     val elements = items.zipWithIndex.map { case (item, i) =>
@@ -30,29 +27,33 @@ case class HorizontalList[T](
         val textLength = elements.map(_.pureSize).sum
         val sepLen = (w - textLength) / (items.length + 1)
         val spare = w - (textLength + (items.length + 1) * sepLen)
-        val seperator = " ".times(sepLen)
-        " ".times(spare) + seperator + elements.mkString(seperator) + seperator
-      case Seperator(s) => s + elements.mkString(s) + s
+        val separator = " ".times(sepLen)
+        " ".times(spare) + separator + elements.mkString(separator) + separator
+      case Separator(s) => s + elements.mkString(s) + s
   }
 
-  def update(e: Event): HorizontalList[T] = e match {
-    case _ if finished =>
-      this
-    case Event.Key('h') | Event.Special.Left if index > 0 =>
-      copy(index = index - 1)
-    case Event.Key('l') | Event.Special.Right if index < items.length - 1 =>
-      copy(index = index + 1)
+  def update(event: Either[Event, Any]): HorizontalList[T] = event match {
+    case Right(_) => this
+    case Left(e) =>
+      e match {
+        case _ if finished =>
+          this
+        case Event.Key('h') | Event.Special.Left if index > 0 =>
+          copy(index = index - 1)
+        case Event.Key('l') | Event.Special.Right if index < items.length - 1 =>
+          copy(index = index + 1)
 
-    case Event.Special.Tab =>
-      var ind = index + 1
-      if ind >= items.length then ind = 0
-      copy(index = ind)
+        case Event.Special.Tab =>
+          var ind = index + 1
+          if ind >= items.length then ind = 0
+          copy(index = ind)
 
-    case Event.Special.Enter =>
-      copy(finished = true)
+        case Event.Special.Enter =>
+          copy(finished = true)
 
-    case _ =>
-      this
+        case _ =>
+          this
+      }
 
   }
 
@@ -62,4 +63,4 @@ object HorizontalList:
   sealed trait Spacing
   object Spacing:
     final case class FillWidth(w: Int) extends Spacing
-    final case class Seperator(s: String) extends Spacing
+    final case class Separator(s: String) extends Spacing

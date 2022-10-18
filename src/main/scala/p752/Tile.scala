@@ -1,11 +1,8 @@
 package p752
 
-import p752.Tiles.toLines
-import p752.Tiles.pureSize
-import p752.Tiles.fillSquare
 
-trait Tile:
-  def update(event: Event): Tile
+trait Tile[-T]:
+  def update(event: Either[Event,T]): Tile[T]
   val render: String
 
   

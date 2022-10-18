@@ -1,8 +1,6 @@
 package p752.tiles
 
-import p752.Style
-import p752.Tile
-import p752.Event
+import p752.{Event, Style, Tile}
 
 final case class VerticalList[T](
     items: List[T],
@@ -11,9 +9,9 @@ final case class VerticalList[T](
     selectedStyle: Style = Style.empty,
     index: Int = 0,
     finished: Boolean = false
-) extends Tile {
+) extends Tile[Any] {
 
-  val selected = items(index)
+  val selected: T = items(index)
 
   override val render: String = {
     items
@@ -25,22 +23,28 @@ final case class VerticalList[T](
       }
       .mkString("\n")
   }
-  override def update(event: Event): VerticalList[T] = event match {
-    case _ if finished => this
-    case Event.Key('j') | Event.Special.Down =>
-      val ind =
-        if index >= items.length - 1
-        then items.length - 1
-        else index + 1
-      this.copy(index = ind)
+  override def update(event: Either[Event, Any]): VerticalList[T] =
+    event match {
+      case Right(_) => this
+      case Left(e) =>
+        e match {
+          case _ if finished => this
+          case Event.Key('j') | Event.Special.Down =>
+            val ind =
+              if index >= items.length - 1
+              then items.length - 1
+              else index + 1
+            this.copy(index = ind)
 
-    case Event.Key('k') | Event.Special.Up =>
-      val ind = if index > 0 then index - 1 else 0
-      this.copy(index = ind)
+          case Event.Key('k') | Event.Special.Up =>
+            val ind = if index > 0 then index - 1 else 0
+            this.copy(index = ind)
 
-    case Event.Special.Enter =>
-      this.copy(finished = true)
-    case _ =>
-      this
-  }
+          case Event.Special.Enter =>
+            this.copy(finished = true)
+          case _ =>
+            this
+
+        }
+    }
 }

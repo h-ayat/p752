@@ -1,7 +1,5 @@
 package p752
 
-import scala.scalanative.unsafe.extern
-
 object Tiles:
   def empty(w: Int, h: Int): String =
     (1 to h).map(_ => " ".times(w)).mkString("\n")
@@ -82,7 +80,7 @@ object Tiles:
         case Align.Vertical.Bottom =>
           dh 
         case Align.Vertical.Center =>
-          (dh / 2) 
+          dh / 2
         case Align.Vertical.Top =>
           0 
       }

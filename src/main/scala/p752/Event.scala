@@ -21,5 +21,5 @@ object Event:
 
     case object Del extends Special {val code = 280}
 
-    val all = Tab :: Backspace :: Enter :: Left :: Right :: Up :: Down :: Del :: Nil
-    val map = all.map(t => t.code -> t).toMap
+    val all: Seq[Special] = Tab :: Backspace :: Enter :: Left :: Right :: Up :: Down :: Del :: Nil
+    val map: Map[Int, Special] = all.map(t => t.code -> t).toMap
