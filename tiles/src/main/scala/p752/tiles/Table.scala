@@ -3,9 +3,10 @@ package p752.tiles
 import p752.Tiles.*
 import p752.*
 
-case class Table(
+case class Table[T](
     headers: List[String],
-    data: List[List[String]],
+    raw: List[T],
+    show: T => List[String],
     title: Option[String],
     align: Align.Horizontal = Align.Horizontal.Center,
     x: Int = 0,
@@ -15,6 +16,8 @@ case class Table(
     xSelectedStyle: Style = Table.selectedStyle,
     ySelectedStyle: Style = Table.selectedStyle
 ) extends Tile[Any] {
+
+  private val data = raw.map(show)
   private val sep = "  "
   override val render: String = {
     val lens = data.foldLeft(headers.map(_.pureSize)) { (acc, curr) =>
@@ -52,7 +55,7 @@ case class Table(
 
     (renderedHeaders :: breaker :: renderedData).mkString("\n")
   }
-  override def update(event: Either[Event, Any]): Table = event match {
+  override def update(event: Either[Event, Any]): Table[T] = event match {
     case Right(_) => this
     case Left(e) =>
       e match {

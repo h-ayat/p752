@@ -14,9 +14,10 @@ object TableDemo {
   private val allData =
     TableData.allData.split("\n").map(_.split(",").toList).toList
 
-  private val defaultTable = Table(
+  private val defaultTable = Table[List[String]](
     headers = allData.head.map(" " + _ + " "),
-    data = allData.tail,
+    raw = allData.tail,
+    show = identity _,
     title = Some("Scala Collections Performance")
   )
 
@@ -25,7 +26,7 @@ object TableDemo {
 }
 
 private case class TableDemo(
-    table: Table,
+    table: Table[List[String]],
     parent: Tile[Nothing],
     maybeInput: Option[Input]
 ) extends Tile[Nothing]:
@@ -50,7 +51,7 @@ private case class TableDemo(
           case Left(Event.Special.Backspace) =>
             parent
           case Left(Event.Special.Enter) =>
-            val cell = table.data(table.y)(table.x)
+            val cell = table.raw(table.y)(table.x)
             val in = Input(placeHolder = cell)
             this.copy(maybeInput = Some(in))
           case Right(_) =>
@@ -61,10 +62,10 @@ private case class TableDemo(
         event match
           case Left(Event.Special.Enter) =>
             this.copy(
-              table = table.copy(data =
-                table.data.updated(
+              table = table.copy(raw =
+                table.raw.updated(
                   table.y,
-                  table.data(table.y).updated(table.x, value.text)
+                  table.raw(table.y).updated(table.x, value.text)
                 )
               ),
               maybeInput = None

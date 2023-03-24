@@ -4,7 +4,7 @@ ThisBuild / organizationName := "h-ayat"
 ThisBuild / organizationHomepage := Some(url("https://h-ayat.github.io/"))
 
 name := "p752"
-version := "0.1.0"
+version := "0.2.0"
 
 lazy val core = project in file("core")
 lazy val tiles = (project in file("tiles")).dependsOn(core)
