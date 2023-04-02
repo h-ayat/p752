@@ -1,10 +1,10 @@
-ThisBuild / scalaVersion := "3.2.1"
+ThisBuild / scalaVersion := "3.2.2"
 ThisBuild / organization := "io.github.h-ayat"
 ThisBuild / organizationName := "h-ayat"
 ThisBuild / organizationHomepage := Some(url("https://h-ayat.github.io/"))
 
 name := "p752"
-version := "0.2.0"
+version := "0.3.0"
 
 lazy val core = project in file("core")
 lazy val tiles = (project in file("tiles")).dependsOn(core)
