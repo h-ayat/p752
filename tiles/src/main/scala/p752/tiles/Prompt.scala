@@ -1,61 +1,45 @@
 package p752.tiles
 
-import p752.Tile
 import p752.Padding
 import p752.Border
-import p752.Style
-import p752.Event
+import p752.Prop
+import p752.KeyEvent
 import p752.Tiles
 import p752.Align
+import p752.Tile
+
+import GenericList.{State, ItemSelected}
+import Prompt.{Style}
 
 object Prompt:
   private val pink = 161
   private val white = 231
-  private val selectedStyle =
-    Style.apply(foreground = white, background = pink, bold = true)
 
-  def apply[T](
-      message: String,
-      options: List[T],
-      show: T => String
-  ): Prompt[T] = {
-    val list = new HorizontalList[T](
-      options,
-      show,
-      HorizontalList.Spacing.Separator("  "),
-      selectedStyle = selectedStyle,
-      index = 0
-    )
+  val defaultPadding = Padding(1, 1, 1, 1)
+  val defaultBorder = Border(Prop.empty.copy(foreground = pink))
+  val defaultStyle = Style()
 
-    Prompt(
-      message = message,
-      list = list,
-      result = None
-    )
-  }
+  final case class Style(
+      border: Border = Prompt.defaultBorder,
+      padding: Padding = Prompt.defaultPadding
+  )
 
-case class Prompt[T](
+class Prompt[T](
     message: String,
-    list: HorizontalList[T],
-    result: Option[T]
-) extends Tile[Any] {
-
+    show: T => String,
+    style: Style = Prompt.defaultStyle
+) extends Tile[KeyEvent, State[T], Option[ItemSelected[T]]]:
   private val messageParts = message.split("\n").toList
-  private val padding = Padding(1, 1, 1, 1)
-  private val border = Border(Style.empty.copy(foreground = Prompt.pink))
+  private val hList =
+    HorizontalList[T](show, HorizontalList.Spacing.Separator("  "))
 
-  override def update(event: Either[Event, Any]): Prompt[T] =
-    (result, event) match
-      case None -> Left(Event.Special.Enter) =>
-        this.copy(result = Some(list.selected))
-      case None -> _ =>
-        this.copy(list = list.update(event))
-      case Some(value) -> _ =>
-        this
-
-  override val render: String =
-    val parts = messageParts :+ "" :+ list.render
+  override def render(state: State[T]): String =
+    val parts = messageParts :+ "" :+ hList.render(state)
     val content = Tiles.renderHorizontal(Align.Horizontal.Center, parts: _*)
-    border.render(padding.render(content))
+    style.border.render(style.padding.render(content))
 
-}
+  override def update(
+      event: KeyEvent,
+      state: State[T]
+  ): (State[T], Option[ItemSelected[T]]) =
+    hList.update(event, state)

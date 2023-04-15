@@ -1,66 +1,40 @@
 package p752.tiles
 
-import p752.{Event, Style, Tile}
+import p752.{KeyEvent, Prop, Tile}
+import GenericList.{State, ItemSelected, Style}
 
-final case class VerticalList[T](
-    items: List[T],
+class VerticalList[T](
     renderItem: T => String,
-    defaultStyle: Style = Style.empty,
-    selectedStyle: Style = Style.empty,
-    selectedIndex: Int = 0,
-    finished: Boolean = false,
+    style: Style = Style(),
     offset: Int = 0,
     limit: Int = 10
-) extends Tile[Any] {
+) extends Tile[KeyEvent, State[T], Option[ItemSelected[T]]]:
 
-  val selected: Option[T] =
-    if items.size > selectedIndex then Some(items(selectedIndex)) else None
-
-  override val render: String = {
-    items.zipWithIndex
+  override def render(state: State[T]): String = 
+    state.items.zipWithIndex
       .drop(offset)
       .take(limit)
-      .map{ (s, ind) =>
-        val style = ind match
-          case i if i == selectedIndex => selectedStyle
-          case _ => defaultStyle
+      .map { (s, ind) =>
+        val currentStyle = ind match
+          case i if i == state.index => style.selected
+          case _                     => style.default
 
-        style.render(renderItem(s))
+        currentStyle.render(renderItem(s))
       }
       .mkString("\n")
-  }
 
-  private def changeIndex(diff: Int): VerticalList[T] =
-    val newIndex: Int = {
-      val ind = selectedIndex + diff
-      if ind < 0 then 0
-      else if ind > (items.length - 1) then items.length - 1
-      else ind
-    }
+  override def update(
+      event: KeyEvent,
+      state: State[T]
+  ): (State[T], Option[ItemSelected[T]]) =
+    event match 
+      case KeyEvent.Key('j') | KeyEvent.Special.Down | KeyEvent.Special.Tab =>
+        state.inc(state.items.length) -> None
+      case KeyEvent.Key('k') | KeyEvent.Special.Up =>
+        state.dec(state.items.length) -> None
 
-    val newOffset =
-      if newIndex < offset then newIndex
-      else if newIndex >= offset + limit then newIndex + 1 - limit
-      else offset
-    this.copy(selectedIndex = newIndex, offset = newOffset)
+      case KeyEvent.Special.Enter =>
+        state -> Some(ItemSelected(state.items(state.index)))
+      case _ =>
+        state -> None
 
-  override def update(event: Either[Event, Any]): VerticalList[T] =
-    event match {
-      case Right(_) => this
-      case Left(e) =>
-        e match {
-          case _ if finished => this
-          case Event.Key('j') | Event.Special.Down =>
-            changeIndex(1)
-
-          case Event.Key('k') | Event.Special.Up =>
-            changeIndex(-1)
-
-          case Event.Special.Enter =>
-            this.copy(finished = true)
-          case _ =>
-            this
-
-        }
-    }
-}

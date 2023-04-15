@@ -1,26 +1,45 @@
 package p752
 
 import p752.Tiles.toLines
+import scala.annotation.tailrec
 
-case class Engine[E](comp: Tile[E]):
-  private var size = 1
-  private var state = comp
+case class Engine[-E >: KeyEvent, S, +MSG <: EngineEvent](
+    comp: Tile[E, S, MSG],
+    initialState: S
+):
   def run(): Unit =
     NativeBindings.init()
     print(Sequences.cursorInvisible)
-    while true do
-      val content = state.render
-      val l = content.toLines
+    go(initialState, 1)
+    print(Sequences.cursorVisible)
 
-      l.foreach(Engine.cleanPrintln)
-      if size < l.length then size = l.length - 1
-      else (l.length to size).map(_ => "").foreach(Engine.cleanPrintln)
+  @tailrec
+  private def go(state: S, size: Int): Unit = {
+    val content = comp.render(state)
+    val l = content.toLines
 
-      val next = NativeBindings.nextChar()
-      if next == 3 then System.exit(0)
-      val event = Event(next)
-      state = state.update(Left(event))
-      Sequences.up(size + 1)
+    l.foreach(Engine.cleanPrintln)
+    val newSize =
+      if size < l.length
+      then l.length - 1
+      else
+        (l.length to size).map(_ => "").foreach(Engine.cleanPrintln)
+        size
+
+    val next = NativeBindings.nextChar()
+    if next != 3
+    then
+      val event = KeyEvent(next)
+      val (newState, msg) = comp.update(event, state)
+      Sequences.up(newSize + 1)
+
+      msg match {
+        case EngineEvent.Terminate => ()
+        case EngineEvent.Pass =>
+          go(newState, newSize)
+      }
+    else ()
+  }
 
 object Engine:
   import Tiles.toLines
@@ -37,3 +56,9 @@ object Sequences:
 
   def up(a: Int): Unit =
     print(s"$ESC[${a}F")
+
+sealed trait EngineEvent
+object EngineEvent {
+  case object Terminate extends EngineEvent
+  case object Pass extends EngineEvent
+}

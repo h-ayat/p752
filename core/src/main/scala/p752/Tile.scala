@@ -1,8 +1,5 @@
 package p752
 
-
-trait Tile[-T]:
-  def update(event: Either[Event,T]): Tile[T]
-  val render: String
-
-  
+trait Tile[-E, S, +MSG]:
+  def render(state: S): String
+  def update(event: E, state: S): (S, MSG)

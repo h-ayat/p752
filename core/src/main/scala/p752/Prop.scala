@@ -12,7 +12,7 @@ trait Alter:
   }
 
 
-case class Style(
+case class Prop(
     foreground: Int = 255,
     background: Int = 16,
     italic: Boolean = false,
@@ -23,7 +23,7 @@ case class Style(
     striked: Boolean = false
 ) extends Alter:
   import Tiles._
-  import Style.Codes
+  import Prop.Codes
 
   private val styleSeq = {
     val buffer = scala.collection.mutable.ListBuffer[String]()
@@ -44,7 +44,7 @@ case class Style(
       }
       .mkString("\n")
   end render
-end Style
+end Prop
 
 case class Padding(top: Int = 0, left: Int = 0, bottom: Int = 0, right: Int = 0)
     extends Alter:
@@ -58,7 +58,7 @@ case class Padding(top: Int = 0, left: Int = 0, bottom: Int = 0, right: Int = 0)
 
     emptyLine.times(top) + s.mkString("\n") + "\n" + emptyLine.times(top).init
 
-case class Border(style: Style = Style(), round: Boolean = false) extends Alter:
+case class Border(style: Prop = Prop(), round: Boolean = false) extends Alter:
   import Tiles._
 
   val floor = "─"
@@ -78,9 +78,9 @@ case class Border(style: Style = Style(), round: Boolean = false) extends Alter:
     ))
       .mkString("\n")
 
-object Style:
+object Prop:
   import Sequences.ESC
-  val empty: Style = Style()
+  val empty: Prop = Prop()
   object Codes:
     val bold = "1"
     val dim = "2"

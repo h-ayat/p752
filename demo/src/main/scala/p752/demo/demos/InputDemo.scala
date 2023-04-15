@@ -1,37 +1,32 @@
 package p752.demo.demos
 
+import p752.KeyEvent
+
 import p752.Tile
-import p752.Event
+import p752.KeyEvent
 import p752.tiles.Input
 import p752.Tiles
 
-object InputDemo:
-  def apply(parent: Tile[Nothing]): Tile[Nothing] =
-    val input = Input()
-    InputDemo(parent, input)
-
-end InputDemo
-
-private case class InputDemo(parent: Tile[Nothing], input: Input)
-    extends Tile[Nothing]:
-
+object InputDemo extends Tile[KeyEvent, Input.State, DemoEvent]:
   private val message = "Hit 'Enter' write exit to go back"
+  private val input = Input()
 
-  override def update(event: Either[Event, Nothing]): Tile[Nothing] =
+  override def update(
+      event: KeyEvent,
+      state: Input.State
+  ): (Input.State, DemoEvent) =
     event match
-      case Left(Event.Special.Enter) =>
-        parent
-      case Left(_) =>
-        val nextInput = input.update(event)
+      case KeyEvent.Special.Enter =>
+        state -> DemoEvent.Ended
+      case event =>
+        val nextInput = input.update(event, state)._1
         if nextInput.text.toLowerCase() == "exit"
-        then parent
-        else this.copy(parent, nextInput)
-      case Right(_) =>
-        this
+        then state -> DemoEvent.Ended
+        else nextInput -> DemoEvent.Pass
 
-  override val render: String =
+  override def render(state: Input.State): String =
     Styles.Frames(
-      Tiles.renderVertical(message, input.render)
+      Tiles.renderVertical(message, input.render(state))
     )
-
 end InputDemo
+

@@ -1,83 +1,93 @@
 package p752.tiles
 
-import p752.Style
+import p752.Prop
 import p752.Tile
-import p752.Event
+import p752.KeyEvent
 import p752.Tiles
 
-object AutoComplete {
-
-  def apply[T](
-      text: String = "",
-      placeHolder: String = "",
-      style: Style = Style.empty,
-      placeHolderStyle: Style = Style.empty,
-      cursorStyle: Style = Style(background = 236, blinking = true),
-      cursor: Int = 0,
+object AutoComplete:
+  final case class State[T](
       items: List[T],
-      renderItem: T => String,
-      showLimit: Int = 5,
-      listDefaultStyle: Style = Style.empty,
-      listSelectedStyle: Style = Style(background = 198, foreground = 231)
-  ): AutoComplete[T] = {
-    val input =
-      Input(text, placeHolder, style, placeHolderStyle, cursorStyle, cursor)
-    val list =
-      VerticalList(
-        items,
-        renderItem,
-        listDefaultStyle,
-        listSelectedStyle,
-        limit = showLimit
-      )
-    AutoComplete(input, list, None, items)
-  }
-}
+      inputState: Input.State,
+      listState: GenericList.State[T]
+  )
+  final case class Style(
+      inputStyle: Input.Style = Input.defaultStyle,
+      listStyle: GenericList.Style = GenericList.defaultStyle
+  )
+
+  val defaultStyle = Style()
+  def defaultState[T](items: List[T]): State[T] =
+    val inputState = Input.State()
+    val listState = GenericList.State(items)
+    State(items, inputState, listState)
+
+  sealed trait Event[+T]
+  object Event:
+    case object Pass extends Event[Nothing]
+    case class ItemMatched[+T](t: T) extends Event[T]
+    case class ItemSelected[+T](t: T) extends Event[T]
+
+import AutoComplete.{State, Event, Style}
 
 final case class AutoComplete[T](
-    input: Input,
-    itemList: VerticalList[T],
-    result: Option[T],
-    allItems: List[T],
-) extends Tile[Any]:
-  import itemList.renderItem
-  override val render: String =
-    Tiles.renderVertical(input.render," ", itemList.render)
+    renderItem: T => String,
+    placeHolder: String = "",
+    style: Style = AutoComplete.defaultStyle
+) extends Tile[KeyEvent, State[T], Event[T]]:
+  val input: Input = Input(placeHolder, style.inputStyle)
+  val itemList: VerticalList[T] = VerticalList(renderItem, style.listStyle)
 
-  override def update(event: Either[Event, Any]): AutoComplete[T] = event match
-    case _ if result.nonEmpty =>
-      this
+  override def render(state: State[T]): String = Tiles.renderVertical(
+    input.render(state.inputState),
+    " ",
+    itemList.render(state.listState)
+  )
 
-    case Left(Event.Special.Enter) =>
-      this.copy(input, itemList, itemList.selected)
+  override def update(
+      event: KeyEvent,
+      state: State[T]
+  ): (State[T], Event[T]) =
+    event match
+      case KeyEvent.Special.Enter =>
+        state.listState.selected match
+          case Some(t) => state -> Event.ItemSelected(t)
+          case None    => state -> Event.Pass
 
-    case e @ Left(Event.Special.Down | Event.Special.Up) =>
-      this.copy(itemList = itemList.update(e))
+      case KeyEvent.Special.Down | KeyEvent.Special.Up =>
+        state.copy(listState =
+          itemList.update(event, state.listState)._1
+        ) -> Event.Pass
 
-    case Left(Event.Special.Tab) =>
-      val newInput = itemList.selected match
-        case None =>
-          input
-        case Some(value) =>
-          val newText = renderItem(value)
-          input.copy(newText, cursor = newText.length)
+      case KeyEvent.Special.Tab =>
+        val newInputState = state.listState.selected match {
+          case None =>
+            state.inputState
+          case Some(item) =>
+            val newText = renderItem(item)
+            state.inputState.copy(newText, cursor = newText.length)
+        }
+        val newItems =
+          state.items
+            .filter(i =>
+              renderItem(i)
+                .toLowerCase()
+                .startsWith(newInputState.text.toLowerCase())
+            )
+        val newListState = GenericList.State(newItems, 0)
+        val msg = newListState.selected match
+          case None        => Event.Pass
+          case Some(value) => Event.ItemMatched(value)
+        State(state.items, newInputState, newListState) -> msg
 
-      val newItems =
-        allItems
-          .filter(i => renderItem(i).toLowerCase().startsWith(newInput.text.toLowerCase()))
-      val updatedList = itemList.copy(items = newItems, selectedIndex = 0)
-      this.copy(input = newInput, itemList = updatedList)
+      case event =>
+        val updatedInputState = input.update(event, state.inputState)._1
+        val lower = updatedInputState.text.toLowerCase()
+        val newItems =
+          state.items
+            .filter(i => renderItem(i).toLowerCase().startsWith(lower))
+        state.copy(listState = state.listState.copy(newItems, 0), inputState = updatedInputState) -> Event.Pass
 
-    case l: Left[Event, Any] =>
-      val updatedInput = input.update(l)
-      val lower = updatedInput.text.toLowerCase()
-      val newItems =
-        allItems
-          .filter(i => renderItem(i).toLowerCase().startsWith(lower))
-      val updatedList = itemList.copy(items = newItems, selectedIndex = 0)
-      this.copy(input = updatedInput, itemList = updatedList)
-    case Right(_) =>
-      this
   end update
 
 end AutoComplete

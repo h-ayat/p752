@@ -1,5 +1,9 @@
 package p752
 
+import p752.Align.Vertical.Top
+import p752.Align.Vertical.Center
+import p752.Align.Vertical.Bottom
+
 object Tiles:
   def empty(w: Int, h: Int): String =
     (1 to h).map(_ => " ".times(w)).mkString("\n")
@@ -18,7 +22,7 @@ object Tiles:
     }
 
   extension (content: String)
-    def render(style: Style): String = style.render(content)
+    def render(style: Prop): String = style.render(content)
 
   extension (content: String)
     def horizontalFit(
@@ -152,7 +156,7 @@ object Tiles:
             command += remaining.head
             remaining = remaining.tail
 
-            if command == Style.Codes.reset then commandBuffer = ""
+            if command == Prop.Codes.reset then commandBuffer = ""
             else commandBuffer += command
 
           } else {
@@ -182,7 +186,7 @@ object Tiles:
             command += remaining.head
             remaining = remaining.tail
             result = result + command
-            mustReset = command != Style.Codes.reset
+            mustReset = command != Prop.Codes.reset
           } else {
             result += ch
             counter += 1
@@ -190,7 +194,7 @@ object Tiles:
           }
         }
 
-        if mustReset then result + Style.Codes.reset
+        if mustReset then result + Prop.Codes.reset
         else result
 
   extension (s: String)
