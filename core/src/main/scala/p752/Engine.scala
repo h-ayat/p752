@@ -2,7 +2,7 @@ package p752
 
 import p752.Tiles.toLines
 
-case class Engine[E](comp: Tile[E]):
+case class Engine[-E >: KeyEvent](comp: Tile[E]):
   private var size = 1
   private var state = comp
   def run(): Unit =
@@ -18,8 +18,8 @@ case class Engine[E](comp: Tile[E]):
 
       val next = NativeBindings.nextChar()
       if next == 3 then System.exit(0)
-      val event = Event(next)
-      state = state.update(Left(event))
+      val event = KeyEvent(next)
+      state = state.update(event)
       Sequences.up(size + 1)
 
 object Engine:

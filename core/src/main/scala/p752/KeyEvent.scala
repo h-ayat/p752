@@ -1,13 +1,13 @@
 package p752
 
-sealed trait Event
+sealed trait KeyEvent
 
-object Event:
-  def apply(ch: Int): Event = Special.map.getOrElse(ch.intValue, Key(ch.toChar))
+object KeyEvent:
+  def apply(ch: Int): KeyEvent = Special.map.getOrElse(ch.intValue, Key(ch.toChar))
 
-  case class Key(ch: Char) extends Event
+  case class Key(ch: Char) extends KeyEvent
 
-  sealed trait Special extends Event:
+  sealed trait Special extends KeyEvent:
     val code: Int
 
   object Special:

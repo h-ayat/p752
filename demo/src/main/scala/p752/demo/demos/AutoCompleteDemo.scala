@@ -2,7 +2,7 @@ package p752.demo.demos
 
 import p752.Tile
 import p752.tiles.AutoComplete
-import p752.Event
+import p752.KeyEvent
 
 object AutoCompleteDemo:
   private val scalaReservedWords =
@@ -11,7 +11,7 @@ object AutoCompleteDemo:
       .split(",")
       .toList
 
-  def apply(parent: Tile[Nothing]): Tile[Nothing] =
+  def apply(parent: Tile[KeyEvent]): Tile[KeyEvent] =
     val ac = AutoComplete[String](
       items = scalaReservedWords,
       renderItem = identity
@@ -19,20 +19,18 @@ object AutoCompleteDemo:
     AutoCompleteDemo(parent, ac)
 
 private case class AutoCompleteDemo(
-    parent: Tile[Nothing],
+    parent: Tile[KeyEvent],
     ac: AutoComplete[String]
-) extends Tile[Nothing]:
+) extends Tile[KeyEvent]:
   override val render: String =
     Styles.Frames(
       ac.render
     )
 
-  override def update(event: Either[Event, Nothing]): Tile[Nothing] =
+  override def update(event:KeyEvent): Tile[KeyEvent] =
     event match
-      case Left(Event.Special.Enter) =>
+      case KeyEvent.Special.Enter =>
         parent
-      case e: Left[Event, Nothing] =>
-        val ac2 = ac.update(e)
+      case _ =>
+        val ac2 = ac.update(event)
         this.copy(ac = ac2)
-      case Right(_) =>
-        this

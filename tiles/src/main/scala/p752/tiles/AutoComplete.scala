@@ -2,7 +2,7 @@ package p752.tiles
 
 import p752.Style
 import p752.Tile
-import p752.Event
+import p752.KeyEvent
 import p752.Tiles
 
 object AutoComplete {
@@ -38,23 +38,23 @@ final case class AutoComplete[T](
     input: Input,
     itemList: VerticalList[T],
     result: Option[T],
-    allItems: List[T],
-) extends Tile[Any]:
+    allItems: List[T]
+) extends Tile[KeyEvent]:
   import itemList.renderItem
   override val render: String =
-    Tiles.renderVertical(input.render," ", itemList.render)
+    Tiles.renderVertical(input.render, " ", itemList.render)
 
-  override def update(event: Either[Event, Any]): AutoComplete[T] = event match
+  override def update(event: KeyEvent): AutoComplete[T] = event match
     case _ if result.nonEmpty =>
       this
 
-    case Left(Event.Special.Enter) =>
+    case KeyEvent.Special.Enter =>
       this.copy(input, itemList, itemList.selected)
 
-    case e @ Left(Event.Special.Down | Event.Special.Up) =>
-      this.copy(itemList = itemList.update(e))
+    case KeyEvent.Special.Down | KeyEvent.Special.Up =>
+      this.copy(itemList = itemList.update(event))
 
-    case Left(Event.Special.Tab) =>
+    case KeyEvent.Special.Tab =>
       val newInput = itemList.selected match
         case None =>
           input
@@ -64,20 +64,20 @@ final case class AutoComplete[T](
 
       val newItems =
         allItems
-          .filter(i => renderItem(i).toLowerCase().startsWith(newInput.text.toLowerCase()))
+          .filter(i =>
+            renderItem(i).toLowerCase().startsWith(newInput.text.toLowerCase())
+          )
       val updatedList = itemList.copy(items = newItems, selectedIndex = 0)
       this.copy(input = newInput, itemList = updatedList)
 
-    case l: Left[Event, Any] =>
-      val updatedInput = input.update(l)
+    case _ =>
+      val updatedInput = input.update(event)
       val lower = updatedInput.text.toLowerCase()
       val newItems =
         allItems
           .filter(i => renderItem(i).toLowerCase().startsWith(lower))
       val updatedList = itemList.copy(items = newItems, selectedIndex = 0)
       this.copy(input = updatedInput, itemList = updatedList)
-    case Right(_) =>
-      this
   end update
 
 end AutoComplete

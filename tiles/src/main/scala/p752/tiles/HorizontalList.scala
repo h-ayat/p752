@@ -2,7 +2,7 @@ package p752.tiles
 
 import p752.Tiles.*
 import p752.tiles.HorizontalList.Spacing.{FillWidth, Separator}
-import p752.{Event, Style, Tile}
+import p752.{KeyEvent, Style, Tile}
 
 case class HorizontalList[T](
     items: List[T],
@@ -12,7 +12,7 @@ case class HorizontalList[T](
     selectedStyle: Style = Style.empty,
     index: Int = 0,
     finished: Boolean = false
-) extends Tile[Any] {
+) extends Tile[KeyEvent] {
 
   val selected: T = items(index)
 
@@ -32,30 +32,24 @@ case class HorizontalList[T](
       case Separator(s) => s + elements.mkString(s) + s
   }
 
-  def update(event: Either[Event, Any]): HorizontalList[T] = event match {
-    case Right(_) => this
-    case Left(e) =>
-      e match {
-        case _ if finished =>
-          this
-        case Event.Key('h') | Event.Special.Left if index > 0 =>
-          copy(index = index - 1)
-        case Event.Key('l') | Event.Special.Right if index < items.length - 1 =>
-          copy(index = index + 1)
+  def update(event: KeyEvent): HorizontalList[T] = event match
+    case _ if finished =>
+      this
+    case KeyEvent.Key('h') | KeyEvent.Special.Left if index > 0 =>
+      copy(index = index - 1)
+    case KeyEvent.Key('l') | KeyEvent.Special.Right if index < items.length - 1 =>
+      copy(index = index + 1)
 
-        case Event.Special.Tab =>
-          var ind = index + 1
-          if ind >= items.length then ind = 0
-          copy(index = ind)
+    case KeyEvent.Special.Tab =>
+      var ind = index + 1
+      if ind >= items.length then ind = 0
+      copy(index = ind)
 
-        case Event.Special.Enter =>
-          copy(finished = true)
+    case KeyEvent.Special.Enter =>
+      copy(finished = true)
 
-        case _ =>
-          this
-      }
-
-  }
+    case _ =>
+      this
 
 }
 

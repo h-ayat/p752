@@ -1,7 +1,7 @@
 package p752.demo.demos
 
 import p752.Tile
-import p752.Event
+import p752.KeyEvent
 import p752.tiles.Table
 import p752.tiles.Input
 import p752.Tiles
@@ -21,15 +21,15 @@ object TableDemo {
     title = Some("Scala Collections Performance")
   )
 
-  def apply(parent: Tile[Nothing]): Tile[Nothing] =
+  def apply(parent: Tile[KeyEvent]): Tile[KeyEvent] =
     TableDemo(table = defaultTable, parent, None)
 }
 
 private case class TableDemo(
     table: Table[List[String]],
-    parent: Tile[Nothing],
+    parent: Tile[KeyEvent],
     maybeInput: Option[Input]
-) extends Tile[Nothing]:
+) extends Tile[KeyEvent]:
   override val render: String =
     val tableResult = table.render
     val mainResult = Styles.Frames(tableResult)
@@ -44,23 +44,21 @@ private case class TableDemo(
     val main = Tiles.renderVertical(message, in.render)
     main.onTopOf(frame)
 
-  override def update(event: Either[Event, Nothing]): Tile[Nothing] =
+  override def update(event: KeyEvent): Tile[KeyEvent] =
     maybeInput match
       case None =>
         event match
-          case Left(Event.Special.Backspace) =>
+          case KeyEvent.Special.Backspace =>
             parent
-          case Left(Event.Special.Enter) =>
+          case KeyEvent.Special.Enter =>
             val cell = table.raw(table.y)(table.x)
             val in = Input(placeHolder = cell)
             this.copy(maybeInput = Some(in))
-          case Right(_) =>
-            this
           case e =>
             this.copy(table = table.update(event))
       case Some(value) =>
         event match
-          case Left(Event.Special.Enter) =>
+          case KeyEvent.Special.Enter =>
             this.copy(
               table = table.copy(raw =
                 table.raw.updated(

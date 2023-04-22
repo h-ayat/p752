@@ -15,7 +15,7 @@ case class Table[T](
     defaultStyle: Style = Table.itemsStyle,
     xSelectedStyle: Style = Table.selectedStyle,
     ySelectedStyle: Style = Table.selectedStyle
-) extends Tile[Any] {
+) extends Tile[KeyEvent] {
 
   private val data = raw.map(show)
   private val sep = "  "
@@ -55,31 +55,26 @@ case class Table[T](
 
     (renderedHeaders :: breaker :: renderedData).mkString("\n")
   }
-  override def update(event: Either[Event, Any]): Table[T] = event match {
-    case Right(_) => this
-    case Left(e) =>
-      e match {
 
-        case Event.Key('h') | Event.Special.Left =>
-          val ind = if x <= 0 then headers.length - 1 else x - 1
-          this.copy(x = ind)
+  override def update(event: KeyEvent): Table[T] = event match
+    case KeyEvent.Key('h') | KeyEvent.Special.Left =>
+      val ind = if x <= 0 then headers.length - 1 else x - 1
+      this.copy(x = ind)
 
-        case Event.Key('l') | Event.Special.Right =>
-          val ind = (x + 1) % headers.length
-          this.copy(x = ind)
+    case KeyEvent.Key('l') | KeyEvent.Special.Right =>
+      val ind = (x + 1) % headers.length
+      this.copy(x = ind)
 
-        case Event.Key('j') | Event.Special.Down =>
-          val ind = (y + 1) % data.length
-          this.copy(y = ind)
+    case KeyEvent.Key('j') | KeyEvent.Special.Down =>
+      val ind = (y + 1) % data.length
+      this.copy(y = ind)
 
-        case Event.Key('k') | Event.Special.Up =>
-          val ind = if y <= 0 then data.length - 1 else y - 1
-          this.copy(y = ind)
-        case _ =>
-          this
+    case KeyEvent.Key('k') | KeyEvent.Special.Up =>
+      val ind = if y <= 0 then data.length - 1 else y - 1
+      this.copy(y = ind)
+    case _ =>
+      this
 
-      }
-  }
 }
 
 object Table:

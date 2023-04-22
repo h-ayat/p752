@@ -1,9 +1,9 @@
 package p752.demo.demos
 
 import p752.Tile
-import p752.Event
+import p752.KeyEvent
 import p752.tiles.Prompt
-import p752.Event.Special
+import p752.KeyEvent.Special
 
 object SimplePromptDemo:
   private val prompt = Prompt[String](
@@ -11,19 +11,19 @@ object SimplePromptDemo:
     options = List("Yes", "No", "Maybe", "But of course", "Hmmm"),
     show = identity[String]
   )
-  def apply(parent: Tile[Nothing]): Tile[Nothing] =
+  def apply(parent: Tile[KeyEvent]): Tile[KeyEvent] =
     SimplePromptDemo(prompt, parent)
 
 private final case class SimplePromptDemo(
     prompt: Prompt[String],
-    parent: Tile[Nothing]
-) extends Tile[Nothing]:
+    parent: Tile[KeyEvent]
+) extends Tile[KeyEvent]:
 
-  override def update(event: Either[Event, Nothing]): Tile[Nothing] =
+  override def update(event: KeyEvent ): Tile[KeyEvent] =
     event match
-      case Left(Event.Special.Enter) =>
+      case KeyEvent.Special.Enter =>
         parent
-      case e =>
-        this.copy(prompt = prompt.update(e))
+      case _ =>
+        this.copy(prompt = prompt.update(event))
 
   override val render: String = Styles.Frames.padding.render(prompt.render)

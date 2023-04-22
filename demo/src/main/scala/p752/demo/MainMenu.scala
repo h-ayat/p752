@@ -1,7 +1,7 @@
 package p752.demo
 
 import p752.Tile
-import p752.Event
+import p752.KeyEvent
 import p752.tiles.VerticalList
 import p752.Style
 import p752.demo.MainMenu.Menu
@@ -14,7 +14,7 @@ import p752.demo.demos.SimplePromptDemo
 object MainMenu:
   private val selectedStyle =
     Style.empty.copy(foreground = 16, background = 155)
-  def apply(): Tile[Nothing] =
+  def apply(): Tile[KeyEvent] =
     MainMenu(vl =
       new VerticalList[MainMenu.Menu](
         MainMenu.Menu.values.toList,
@@ -31,9 +31,9 @@ object MainMenu:
     case Exit extends Menu
 
 private case class MainMenu(vl: VerticalList[MainMenu.Menu])
-    extends Tile[Nothing]:
+    extends Tile[KeyEvent]:
 
-  def handleChoos(menu: MainMenu.Menu): Tile[Nothing] = menu match
+  def handleChoos(menu: MainMenu.Menu): Tile[KeyEvent] = menu match
     case Menu.Input =>
       InputDemo(this)
     case Menu.Autocomplete =>
@@ -46,13 +46,11 @@ private case class MainMenu(vl: VerticalList[MainMenu.Menu])
       System.exit(0)
       this
 
-  override def update(event: Either[Event, Nothing]): Tile[Nothing] =
+  override def update(event: KeyEvent): Tile[KeyEvent] =
     event match
-      case Left(Event.Special.Enter) =>
+      case KeyEvent.Special.Enter =>
         handleChoos(vl.selected.get)
-      case Left(value) =>
+      case value =>
         this.copy(vl.update(event))
-      case Right(value) =>
-        this
 
   override val render: String = Styles.Frames(vl.render)
