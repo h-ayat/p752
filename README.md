@@ -16,7 +16,7 @@ This project consists of three modules:
 ## Setup
 Add the following to `build.sbt` in your scala-native project: (you can use `p752-core` instead of `p752-tiles` to exclude predefined components)
 ```scala
-libraryDependencies += "io.github.h-ayat" %%% "p752-tiles" % "0.3.0"
+libraryDependencies += "io.github.h-ayat" %%% "p752-tiles" % "0.4.0"
 ```
 
 ## Demo
